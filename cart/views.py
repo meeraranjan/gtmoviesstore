@@ -5,6 +5,9 @@ from .utils import calculate_cart_total
 from .models import Order, Item
 from django.contrib.auth.decorators import login_required
 
+from django.http import JsonResponse
+from .models import CheckoutFeedback
+
 def index(request):
     cart_total = 0
     movies_in_cart = []
@@ -54,3 +57,26 @@ def purchase(request):
     template_data['title'] = 'Purchase confirmation'
     template_data['order_id'] = order.id
     return render(request, 'cart/purchase.html', {'template_data': template_data})
+
+
+@login_required
+def submit_feedback(request, order_id):
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        thoughts = request.POST.get("thoughts", "").strip()
+
+        if thoughts:  # Require at least the feedback
+            CheckoutFeedback.objects.create(
+                name=name if name else None,
+                thoughts=thoughts,
+                order=Order.objects.get(id=order_id)
+            )
+            return JsonResponse({"status": "success"})
+        return JsonResponse({"status": "error", "message": "Feedback cannot be empty"})
+
+    return JsonResponse({"status": "error", "message": "Invalid request"})
+
+
+def all_feedback(request):
+    feedbacks = CheckoutFeedback.objects.order_by("-created_at")
+    return render(request, "cart/all_feedback.html", {"feedbacks": feedbacks})
