@@ -1,6 +1,52 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review
+from .models import Movie, Review, Petition, PetitionVote
 from django.contrib.auth.decorators import login_required
+from .forms import PetitionForm
+from django.db.models import Count, Q
+
+
+
+def petition_list(request):
+    petitions= (Petition.objects.annotate(
+        up_count= Count("votes", filter=Q(votes__value=True)),
+        down_count= Count("votes", filter=Q(votes__value=False)),
+        score= Count("votes", filter=Q(votes__value=True)) - Count("votes", filter=Q(votes__value=False))
+    ).order_by("-score"))
+    return render(request, "movies/petition_list.html", {"petitions":petitions})
+
+@login_required
+def petition_create(request):
+    if request.method == 'POST':
+        form = PetitionForm(request.POST)
+        if form.is_valid():
+            petition = form.save(commit=False)
+            petition.created_by = request.user
+            petition.save()
+            return redirect("petition_list")
+    else:
+        form = PetitionForm()
+
+    return render(request, "movies/petition_create.html", {"form": form})
+
+@login_required
+def petition_vote(request, petition_id, value):
+    petition = get_object_or_404(Petition, id=petition_id)
+    if value.lower()== "true":
+        bool_value = True
+    elif value.lower() =="false":
+        bool_value = False
+    else:
+        return redirect("petition_list")
+    vote, created= PetitionVote.objects.get_or_create(
+        petition= petition,
+        user= request.user,
+        defaults={"value": bool_value }
+    )
+    if not created:
+        vote.value= bool_value
+        vote.save()
+    return redirect("petition_list")
+
 
 def index(request):
     search_term = request.GET.get('search')
