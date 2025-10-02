@@ -51,7 +51,14 @@
                     </div>
                 </div>
                 {% empty %}
-                <p>No petitions yet. Be the first to <a href="{% url 'petition_create' %}">create one</a>!</p>
+                <p>No petitions yet. Be the first to 
+                {% if user.is_authenticated %}
+                <a href="{% url 'petition_create' %}">create one</a>!
+                {% else %}
+                    <a href="{% url 'accounts.login' %}?next={% url 'petition_create' %}">
+                        create one (Login Required)
+                    </a>!
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
