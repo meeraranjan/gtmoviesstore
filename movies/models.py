@@ -18,3 +18,26 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return str(self.id) + ' - ' + self.movie.name
+    
+class Petition(models.Model):
+    title= models.CharField(max_length=255)
+    description= models.TextField(blank=True)
+    created_by= models.ForeignKey(User, on_delete=models.CASCADE,related_name="petitions")
+    created_at= models.DateTimeField(auto_now_add=True)
+
+    def up_votes(self):
+        return self.votes.filter(value=True).count()
+    
+    def down_votes(self):
+        return self.votes.filter(value=False).count()
+    
+    def __str__(self):
+        return self.title
+    
+class PetitionVote(models.Model):
+    petition= models.ForeignKey(Petition, on_delete=models.CASCADE, related_name="votes")
+    user= models.ForeignKey(User, on_delete=models.CASCADE)
+    value= models.BooleanField()
+
+    class Meta:
+        unique_together= ("petition", "user")

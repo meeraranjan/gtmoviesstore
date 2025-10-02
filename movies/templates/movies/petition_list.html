@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+
+<div class="p-3">
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col-md-8 mx-auto mb-3">
+                <h2 class="mb-4">Movie Petitions</h2>
+                {% if user.is_authenticated %}
+                <a href="{% url 'petition_create' %}" class="btn bg-dark text-white mb-4">
+                    Create New Petition
+                </a>
+                {% else %}
+                <a href="{% url 'accounts.login' %}?next={% url 'petition_create' %}" class="btn bg-dark text-white mb-4">
+                        Create New Petition (Login Required)
+                    </a>
+                {% endif %}
+
+                {% for p in petitions %}
+                <div class="card shadow p-3 mb-4 rounded">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ p.title }}</h4>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            by {{ p.created_by.username }} • {{ p.created_at|date:"M d, Y" }}
+                        </h6>
+                        <p class="card-text">{{ p.description }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                Up: {{p.up_count}} | Down: {{p.down_count}}
+                                <span class="ms-3">Score: {{p.score}}</span>
+                            </div>
+                            <div>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'petition_vote' p.id 'True' %}" class="btn btn-success btn-sm">
+                                    Vote Up
+                                </a>
+                                <a href="{% url 'petition_vote' p.id 'False' %}" class="btn btn-danger btn-sm">
+                                    Vote Down
+                                </a>
+                                {% else %}
+                                    <a href="{% url 'accounts.login' %}?next={% url 'petition_list' %}" class="btn btn-success btn-sm">
+                                        Vote Up
+                                    </a>
+                                    <a href="{% url 'accounts.login' %}?next={% url 'petition_list' %}" class="btn btn-danger btn-sm">
+                                        Vote Down
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No petitions yet. Be the first to <a href="{% url 'petition_create' %}">create one</a>!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
