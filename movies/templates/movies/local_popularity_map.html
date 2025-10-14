@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Local Popularity Map</h2>
+<div id="map" style="width: 100%; height: 600px;"></div>
+
+<script>
+function initMap() {
+    const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 4,
+        center: { lat: 39.8283, lng: -98.5795 }, // default center USA
+    });
+
+    const markers = [
+        {% for m in markers %}
+        {
+            city: "{{ m.city|escapejs }}",
+            lat: {{ m.lat }},
+            lng: {{ m.lng }},
+            movies: [
+                {% for movie in m.movies %}
+                {
+                    title: "{{ movie.title|escapejs }}",
+                    count: {{ movie.count }}    
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            top_movie_title: "{{ m.top_movie_title|default_if_none:''|escapejs }}",
+            top_movie_count: {{ m.top_movie_count|default:0 }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+
+    const bounds = new google.maps.LatLngBounds();
+
+    markers.forEach((m) => {
+        const marker = new google.maps.Marker({
+            position: { lat: m.lat, lng: m.lng },
+            map: map,
+            title: m.city
+        });
+
+        bounds.extend(marker.position);
+
+        const infoWindow = new google.maps.InfoWindow({
+            content: `<h4>${m.city}</h4>
+                        ${m.top_movie_title ? `<p>Trending movie: <strong>${m.top_movie_title}</strong> (${m.top_movie_count} purchases)</p>` : '<p>No trending movie yet</p>'}
+                      <ul>${m.movies.length ? m.movies.map(movie => `<li>${movie.title}: ${movie.count}</li>`).join('') : '<li>No trending movies yet</li>'}</ul>`
+        });
+
+        marker.addListener("click", () => {
+            infoWindow.open(map, marker);
+        });
+    });
+
+    if (markers.length > 0) {
+        map.fitBounds(bounds);
+    }
+}
+</script>
+
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap">
+</script>
+{% endblock %}
