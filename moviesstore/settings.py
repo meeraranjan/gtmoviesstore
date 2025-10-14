@@ -133,3 +133,5 @@ STATICFILES_DIRS = [
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+GOOGLE_MAPS_API_KEY = "AIzaSyCAZGcPey98efdwODbN7bumoJp8ybon9ds"
