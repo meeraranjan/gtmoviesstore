@@ -7,6 +7,13 @@ class Movie(models.Model):
     price = models.IntegerField()
     description = models.TextField()
     image = models.ImageField(upload_to='movie_images/')
+
+    def average_rating(self):
+        ratings = self.ratings.all()
+        if ratings.exists():
+            return round(sum(r.rating for r in ratings) / ratings.count(), 1)
+        return 0
+
     def __str__(self):
         return str(self.id) + ' - ' + self.name
     
@@ -41,3 +48,14 @@ class PetitionVote(models.Model):
 
     class Meta:
         unique_together= ("petition", "user")
+
+class Rating(models.Model):
+    movie = models.ForeignKey(Movie, related_name='ratings', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i,i) for i in range(1,6)])
+
+    class Meta:
+        unique_together = ('movie', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} rated {self.movie.title} - {self.rating}"

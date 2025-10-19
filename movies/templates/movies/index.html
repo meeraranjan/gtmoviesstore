@@ -30,7 +30,7 @@
                 <div class="p-2 card align-items-center pt-4">
                     <img src="{{ movie.image.url }}" class="card-img-top rounded img-card-200">
                         <div class="card-body text-center"> 
-                        <a href="{% url 'movies.show' id=movie.id %}" class="btn bg-dark text-white">
+                        <a href="{% url 'movie_detail' movie.id %}" class="btn bg-dark text-white">
                         {{ movie.name }}
                         </a>                        
                     </div>

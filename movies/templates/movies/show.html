@@ -27,6 +27,32 @@
                         </div>
                     </form>
                 </p>
+                <!-- ⭐ Ratings Section -->
+                <h2>Ratings</h2>
+                <div class="avg-stars mb-2">
+                <b>Average Rating:</b> {{ avg_rating }} / 5
+                </div>
+
+                {% if user.is_authenticated %}
+                <h5>My Rating:</h5>
+                <form method="POST" id="rating-form">
+                    {% csrf_token %}
+                    <div class="number-rating">
+                    {% for i in "12345" %}
+                        <input type="radio" name="rating" id="rating{{ i }}" value="{{ i }}"
+                        {% if user_rating and user_rating.rating|stringformat:"s" == i %}checked{% endif %}>
+                        <label for="rating{{ i }}">{{ i }}</label>
+                    {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-dark mt-2">Submit Rating</button>
+                </form>
+
+                {% if user_rating %}
+                    <p class="mt-2">Your rating: {{ user_rating.rating }} / 5</p>
+                {% endif %}
+                {% else %}
+                <p><a href="{% url 'login' %}">Log in</a> to rate this movie.</p>
+                {% endif %}
                 <h2>Reviews</h2>
                 <hr />
                 <ul class="list-group">
@@ -70,7 +96,8 @@
                     </div>
                 </div>
                 {% endif %}
-            </div>
+
+                </div>
             <div class="col-md-6 mx-auto mb-3 text-center">
                 <img src="{{ template_data.movie.image.url }}" class="rounded img-card-400" />
             </div>
@@ -78,3 +105,42 @@
     </div>
 </div>
 {% endblock content %}
+
+<style>
+.number-rating {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 1.2rem;
+}
+.number-rating input {
+  display: none;
+}
+.number-rating label {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.number-rating input:checked + label {
+  background-color: #ffca08;
+  border-color: #ffca08;
+  color: #000;
+  font-weight: bold;
+}
+.number-rating label:hover {
+  background-color: #f0f0f0;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const ratingInputs = document.querySelectorAll('input[name="rating"]');
+  ratingInputs.forEach(input => {
+    input.addEventListener('change', function() {
+      this.closest('form').submit();
+    });
+  });
+});
+</script>

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Movie, Review, Petition, PetitionVote
+from .models import Movie, Review, Petition, PetitionVote, Rating
 from django.contrib.auth.decorators import login_required
-from .forms import PetitionForm
+from .forms import PetitionForm, RatingForm
 from django.db.models import Count, Q
 from cart.models import Order, Item
 from accounts.models import UserProfile
@@ -144,3 +144,40 @@ def local_popularity_map(request):
         "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY
     }
     return render(request, "movies/local_popularity_map.html", context)
+
+@login_required
+def movie_detail(request, pk):
+    movie = get_object_or_404(Movie, pk=pk)
+    user_rating = Rating.objects.filter(movie=movie, user=request.user).first()
+
+    if request.method == 'POST':
+        print("✅ POST received:", request.POST)
+        print("RAW POST:", request.POST)
+        form = RatingForm(request.POST, instance=user_rating)
+        print("🔍 Form raw data:", form.data)
+        print("🔍 Expected fields:", form.fields.keys())
+
+        if form.is_valid():
+            rating_obj = form.save(commit=False)
+            rating_obj.user = request.user
+            rating_obj.movie = movie
+            rating_obj.save()
+            print("💾 Saved rating:", rating_obj.rating)
+            return redirect('movie_detail', pk=movie.pk)
+        else:
+            # This will now show the exact reason
+            print("❌ Form invalid. Errors:", form.errors.as_json())
+            return HttpResponse(f"<pre>{form.errors.as_json()}</pre>")
+    else:
+        form = RatingForm(instance=user_rating)
+
+    context = {
+        'template_data': {
+            'movie': movie,
+            'reviews': movie.review_set.all(),
+        },
+        'form': form,
+        'user_rating': user_rating,
+        'avg_rating': movie.average_rating(),
+    }
+    return render(request, 'movies/show.html', context)
