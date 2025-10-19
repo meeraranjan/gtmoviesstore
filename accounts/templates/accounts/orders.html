@@ -9,7 +9,7 @@
                 {% for order in template_data.orders %}
                 <div class="card mb-4">
                     <div class="card-header">
-                    Order #{{ order.id }}
+                        Order #{{ order.id }}
                     </div>
                     <div class="card-body">
                         <b>Date:</b> {{ order.date }}<br />
@@ -17,8 +17,7 @@
                         <table class="table table-bordered table-striped text-center mt-3">
                             <thead>
                                 <tr>
-                                    <th scope="col">Item ID</th>
-                                    <th scope="col">Movie</th>
+                                    <th scope="col">Item</th>
                                     <th scope="col">Price</th>
                                     <th scope="col">Quantity</th>
                                 </tr>
@@ -26,9 +25,11 @@
                             <tbody>
                                 {% for item in order.item_set.all %}
                                 <tr>
-                                    <td>{{ item.movie.id }}</td>
-                                    <a class="link-dark" href="{% url 'movie_detail' pk=item.movie.id %}">
-                                        {{ item.movie.name }} </a>
+                                    <td>
+                                        {{ item.movie.id }} -
+                                        <a class="link-dark" href="{% url 'movie_detail' pk=item.movie.id %}">
+                                            {{ item.movie.name }}
+                                        </a>
                                     </td>
                                     <td>${{ item.movie.price }}</td>
                                     <td>{{ item.quantity }}</td>
