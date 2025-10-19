@@ -27,7 +27,7 @@
                                 {% for item in order.item_set.all %}
                                 <tr>
                                     <td>{{ item.movie.id }}</td>
-                                    <td> <a class="link-dark" href="{% url 'movies.show' id=item.movie.id %}">
+                                    <a class="link-dark" href="{% url 'movie_detail' pk=item.movie.id %}">
                                         {{ item.movie.name }} </a>
                                     </td>
                                     <td>${{ item.movie.price }}</td>

@@ -79,9 +79,9 @@ def create_review(request, id):
         review.movie = movie
         review.user = request.user
         review.save()
-        return redirect('movies.show', id=id)
+        return redirect('movie_detail', id=id)
     else:
-        return redirect('movies.show', id=id)
+        return redirect('movie_detail', id=id)
     
 @login_required
 def edit_review(request, id, review_id):
@@ -97,16 +97,16 @@ def edit_review(request, id, review_id):
         review = Review.objects.get(id=review_id)
         review.comment = request.POST['comment']
         review.save()
-        return redirect('movies.show', id=id)
+        return redirect('movie_detail', id=id)
     else:
-        return redirect('movies.show', id=id)
+        return redirect('movie_detail', id=id)
 
 @login_required
 def delete_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id,
     user=request.user)
     review.delete()
-    return redirect('movies.show', id=id)
+    return redirect('movie_detail', id=id)
 
 def local_popularity_map(request):
     items= Item.objects.select_related('order__user', 'movie')
