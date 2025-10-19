@@ -3,8 +3,9 @@ from .models import Movie, Review, Petition, PetitionVote
 from django.contrib.auth.decorators import login_required
 from .forms import PetitionForm
 from django.db.models import Count, Q
-
-
+from cart.models import Order, Item
+from accounts.models import UserProfile
+from django.conf import settings
 
 def petition_list(request):
     petitions= (Petition.objects.annotate(
@@ -106,3 +107,40 @@ def delete_review(request, id, review_id):
     user=request.user)
     review.delete()
     return redirect('movies.show', id=id)
+
+def local_popularity_map(request):
+    items= Item.objects.select_related('order__user', 'movie')
+    trending= {}
+    for item in items:
+        user= item.order.user
+        profile = getattr(user, 'userprofile', None)
+        if not profile or not profile.city or not profile.latitude or not profile.longitude:
+            continue
+        city= profile.city
+        if city not in trending:
+            trending[city]= {}
+        trending[city][item.movie.name]= trending[city].get(item.movie.name,0)+ item.quantity
+    
+    #markers for google maps
+    markers=[]
+    for city, movies in trending.items():
+        profile= UserProfile.objects.filter(city= city).first()
+        if profile:
+            if movies:
+                top_movie_title, top_movie_count= max(movies.items(), key=lambda x: x[1])
+            else:
+                top_movie_title= None
+                top_movie_count=0
+            markers.append({
+                "city": city,
+                "lat": profile.latitude,
+                "lng": profile.longitude,
+                "movies": [{"title": title, "count": count} for title, count in movies.items()],
+                "top_movie_title": top_movie_title,
+                "top_movie_count": top_movie_count
+            })
+    context={
+        "markers": markers,
+        "google_maps_api_key": settings.GOOGLE_MAPS_API_KEY
+    }
+    return render(request, "movies/local_popularity_map.html", context)
