@@ -10,4 +10,5 @@ urlpatterns = [
  path("petitions/", views.petition_list, name= "petition_list"),
  path("petitions/new", views.petition_create, name= "petition_create"),
  path("petitions/<int:petition_id>/vote/<str:value>/", views.petition_vote, name="petition_vote"), 
+ path('local_popularity_map/', views.local_popularity_map, name= 'local_popularity_map'),
 ]
