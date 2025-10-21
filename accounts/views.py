@@ -20,7 +20,7 @@ def signup(request):
     elif request.method == 'POST':
         form = CustomUserCreationForm(request.POST, error_class=CustomErrorList)
         if form.is_valid():
-            form.save()
+            user= form.save()
             return redirect('accounts.login')
         else:
             template_data['form'] = form
